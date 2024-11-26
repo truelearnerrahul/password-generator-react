@@ -1,15 +1,27 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 const App: React.FC = () => {
   const [password, setPassword] = useState("")
   const [length, setLength] = useState(7);
   const [numAllowed, setNumAllowed] = useState(false);
   const [charAllowed, setCharAllowed] = useState(false);
+  const [isCopied, setIsCopied] = useState("copy");
+  const passwordRef = useRef<HTMLInputElement>(null);
 
 
   useEffect(() => {
     generatePassword();
   }, [length, numAllowed, charAllowed])
+
+  const copyPasswordToClipboard = () => {
+    passwordRef.current?.select()
+    passwordRef.current?.setSelectionRange(0,10 )
+    setIsCopied("copied");
+    setTimeout(()=>{
+      setIsCopied("copy");
+    },1000)
+    window.navigator.clipboard.writeText(password);
+  }
   
   const generatePassword = useCallback(()=> {
     console.log("calling")
@@ -21,7 +33,7 @@ const App: React.FC = () => {
     if(charAllowed) str+= "!@#$%&*";
 
     for (let i = 1; i <= length; i++) {
-      let char = Math.floor(Math.random()*(length + 1) +  1)
+      const char = Math.floor(Math.random()*(length + 1) +  1)
       console.log("char", char)
       pass += str.charAt(char);
       
@@ -35,8 +47,8 @@ const App: React.FC = () => {
       <h1 className="mb-4 font-bold uppercase">Password Generator</h1>
       <div>
         <div className="mb-2">
-          <input className="rounded-md p-1 m-1" type="text" value={password} onChange={(e)=> setPassword(e.target.value)} id="pass" />
-          <button className="text-white border px-1 py-0.5 bg-blue-500 rounded-md">copy</button>
+          <input ref={passwordRef} className="rounded-md p-1 m-1" type="text" value={password} onChange={(e)=> setPassword(e.target.value)} id="pass" />
+          <button className="text-white border px-1 py-0.5 bg-blue-500 rounded-md" onClick={copyPasswordToClipboard}>{isCopied}</button>
         </div>
         <div className="flex justify-center">
           <div className="mx-2 flex justify-center items-center">
@@ -53,7 +65,7 @@ const App: React.FC = () => {
 
           <div className="mx-2 flex justify-center items-center">
             <label htmlFor="char" className="mr-2">Character</label>
-            <input type="checkbox" name="char" id="char" checked={charAllowed} onChangeCapture={()=> setCharAllowed(prev => !prev)} />
+            <input type="checkbox" name="char" id="char" checked={charAllowed} onChange={()=> setCharAllowed(prev => !prev)} />
           </div>
         </div>
       </div>
